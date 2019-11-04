@@ -6,6 +6,9 @@
 // so it can be used offline.
 
 
+import IPFS from "ipfs"
+
+
 importScripts("version.js")
 
 
@@ -55,6 +58,16 @@ self.addEventListener("fetch", event => {
     const promise = caches
       .match(event.request)
       .then(r => r || fetch(event.request))
+
+    event.respondWith(promise)
+
+  // Internal IPFS request
+  } else if (event.request.url.startsWith(DEFAULT_IPFS_GATEWAY)) {
+    const promise = defaultIpfsCheck().then(isOnline => {
+      return isOnline
+        ? fetch(event.request)
+        : ensureTemporaryIpfsNode().then(translateIpfsRequest(event.request))
+    })
 
     event.respondWith(promise)
 
@@ -113,3 +126,68 @@ function removeAllCaches() {
     return Promise.all(promises)
   })
 }
+
+
+
+// ⚡️  ░░  IPFS
+
+
+const DEFAULT_IPFS_GATEWAY = "http://127.0.0.1:8080"
+
+
+let ipfsGateCheck
+let ipfsNode
+
+
+function defaultIpfsCheck() {
+  return ipfsGateCheck === undefined
+    ? fetch(DEFAULT_IPFS_GATEWAY + "/api/v0/version")
+        .then(r => { ipfsGateCheck = r.ok; return r.ok })
+        .catch(_ => { ipfsGateCheck = false; return false })
+    : Promise.resolve(ipfsGateCheck)
+}
+
+
+function ensureTemporaryIpfsNode() {
+  if (ipfsNode) {
+    return Promise.resolve(ipfsNode)
+
+  } else {
+    return IPFS.create().then(n => {
+      ipfsNode = n
+      return n
+    })
+
+  }
+}
+
+
+function translateIpfsRequest(request) { return ipfs => {
+  const url = new URL(request.url)
+
+  switch (url.pathname) {
+    case "/api/v0/dns":
+      // return ipfs.dns(url.searchParams.get("arg"))
+
+      const domain = url.searchParams.get("arg")
+      const domainWithPrefix = domain.startsWith("_dnslink.") ? domain : "_dnslink." + domain
+
+      return fetch(
+        "https://cloudflare-dns.com/dns-query?type=TXT&name=" + domainWithPrefix,
+        { headers: new Headers({ "Accept" : "application/dns-json" }) }
+      )
+
+    case "/api/v0/ls":
+      console.log("ls", url.searchParams.get("arg"))
+      return ipfs.ls(url.searchParams.get("arg"))
+
+    case "/api/v0/name/resolve":
+      return ipfs.name.resolve(
+        url.searchParams.get("arg"),
+        { local: url.searchParams.get("local") === "true" }
+      )
+
+    default:
+      return ipfs.get(url.pathname)
+  }
+}}
