@@ -3,6 +3,14 @@ let
   sources = import ./nix/sources.nix;
   pkgs = import sources.nixpkgs {};
 
+  # Don't install Stack on Github Actions
+  stack =
+    if (builtins.getEnv "GITHUB_ACTION" != "") then
+      pkgs.curl
+    else
+      pkgs.haskellPackages.stack
+  ;
+
 in
 
   pkgs.mkShell {
@@ -17,7 +25,7 @@ in
       # Language Specific
       pkgs.elmPackages.elm
       pkgs.elmPackages.elm-format
-      pkgs.haskellPackages.stack
+      stack
       pkgs.nodejs-14_x
       pkgs.yarn
 
