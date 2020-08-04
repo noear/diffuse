@@ -17,6 +17,7 @@ in
       # Language Specific
       pkgs.elmPackages.elm
       pkgs.elmPackages.elm-format
+      pkgs.haskellPackages.stack
       pkgs.nodejs-14_x
       pkgs.yarn
 
