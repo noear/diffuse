@@ -12,9 +12,18 @@ jobs:
     
     steps:
       - uses: actions/checkout@v2
-      - uses: cachix/install-nix-action@v10
+      - uses: actions-rs/toolchain@v1
+      - uses: actions/setup-node@v1
         with:
-          nix_path: nixpkgs=channel:nixos-unstable
-      - run: nix-shell --run "just install-deps"
-      - run: nix-shell --run "just build-prod"
+          node-version: 14
+      - uses: jorelali/setup-elm@v2
+        with:
+          elm-version: 0.19.1
+      
+      # Dependencies
+      - run: cargo install just
+      
+      # Tasks
+      - run: just install-deps
+      - run: just build-prod
       - run: ls ./build
