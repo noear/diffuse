@@ -50,7 +50,6 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y webkit2gtk-4.0
-      - run: yarn
           
       # Tasks
       - uses: tauri-apps/tauri-action@v0
