@@ -12,12 +12,13 @@ jobs:
     
     steps:
       - uses: actions/checkout@v2
-      - uses: mstksg/get-package@v1
-        with:
-          apt-get: libgmp-dev
       - uses: cachix/install-nix-action@v10
         with:
           nix_path: nixpkgs=channel:nixos-unstable
+      - uses: mstksg/get-package@v1
+        with:
+          apt-get: libgmp-dev
+      - uses: mstksg/setup-stack@v1
       
       # Tasks
       - run: nix-shell --run "just install-deps"
