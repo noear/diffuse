@@ -8,27 +8,20 @@ on:
 
 jobs:
   build:
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
     
     steps:
       - uses: actions/checkout@v2
-      - uses: actions-rs/toolchain@v1
+      - uses: mstksg/get-package@v1
         with:
-          toolchain: stable
-      - uses: actions/setup-node@v1
+          apt-get: libgmp-dev
+      - uses: cachix/install-nix-action@v10
         with:
-          node-version: 14
-      - uses: jorelali/setup-elm@v2
-        with:
-          elm-version: 0.19.1
-      
-      # Dependencies
-      - run: cargo install just
+          nix_path: nixpkgs=channel:nixos-unstable
       
       # Tasks
-      - run: just install-deps
-      - run: just build-prod
-      - run: ls ./build
+      - run: nix-shell --run "just install-deps"
+      - run: nix-shell --run "just build-prod"
       
   tauri:
     needs: build
@@ -47,7 +40,7 @@ jobs:
           toolchain: stable
       - uses: actions/setup-node@v1
         with:
-          node-version: 14
+          node-version: 12
       
       # Dependencies
       - run: cargo install tauri-bundler --force
