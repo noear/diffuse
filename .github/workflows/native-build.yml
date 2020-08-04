@@ -23,6 +23,69 @@ jobs:
       # Tasks
       - run: nix-shell --run "just install-deps"
       - run: nix-shell --run "just build-prod"
+      - run: mv build diffuse
+      - run: mkdir compressed
+      
+      # Create zip
+      - uses: montudor/action-zip@v0.1.0
+        with:
+          args: zip -qq -r ./compressed/diffuse-web.zip ./diffuse
+          
+      # Create tar.gz
+      - uses: master-atul/tar-action@v1.0.2
+        with:
+          command: c
+          cwd: .
+          files: ./diffuse
+          outPath: compressed/diffuse-web.tar.gz
+          
+      # Upload artifacts
+      - uses: actions/upload-artifact@v2
+        with:
+          name: diffuse-web
+          path: compressed/
+      
+      
+  create-release:
+    needs: build
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v2
+        with:
+          name: diffuse-web
+          path: compressed/
+      
+      - uses: actions/create-release@v1
+        id: create_release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: "${{ env.PACKAGE_VERSION }}"
+          release_name: "v${{ env.PACKAGE_VERSION }}"
+          body: "See the assets to download this version and install."
+          draft: true
+          prerelease: true
+      
+      - uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./compressed/diffuse-web.zip
+          asset_name: diffuse-web.zip
+          asset_content_type: application/zip
+          
+      - uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./compressed/diffuse-web.tar.gz
+          asset_name: diffuse-web.tar.gz
+          asset_content_type: application/gzip
+      
       
   tauri:
     needs: build
@@ -41,7 +104,17 @@ jobs:
           toolchain: stable
       - uses: actions/setup-node@v1
         with:
-          node-version: 12
+          node-version: 14
+          
+      # Download and uncompress artifacts
+      - uses: actions/download-artifact@v2
+        with:
+          name: diffuse-web
+          path: compressed/
+          
+      - uses: montudor/action-zip@v0.1.0
+        with:
+          args: unzip -qq ./compressed/diffuse-web.zip -d ./build
       
       # Dependencies
       - run: cargo install tauri-bundler --force
@@ -58,7 +131,6 @@ jobs:
         with:
           distPath: ./build
           iconPath: ./src/Static/Images/icon.png
-          prerelease: true
-          releaseDraft: true
+          releaseId: ${{ needs.create-release.outputs.RELEASE_UPLOAD_ID }}
         
     
