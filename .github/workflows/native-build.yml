@@ -94,7 +94,7 @@ jobs:
       
       
   tauri:
-    needs: build
+    needs: create-release
     
     strategy:
       fail-fast: false
