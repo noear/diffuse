@@ -48,14 +48,14 @@ jobs:
       # Create zip
       - uses: montudor/action-zip@v0.1.0
         with:
-          args: zip -qq -r ./compressed/diffuse-web.zip ./diffuse
+          args: zip -qq -r ./compressed/diffuse-web.zip ./build
           
       # Create tar.gz
       - uses: master-atul/tar-action@v1.0.2
         with:
           command: c
           cwd: .
-          files: ./diffuse
+          files: ./build
           outPath: compressed/diffuse-web.tar.gz
       
       # Get Diffuse's version number  
