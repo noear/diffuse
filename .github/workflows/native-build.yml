@@ -57,6 +57,10 @@ jobs:
           name: diffuse-web
           path: compressed/
       
+      # Get Diffuse's version number  
+      - run: echo ::set-env name=PACKAGE_VERSION::$(node -p "require('./package.json').version")
+      
+      # Create release
       - uses: actions/create-release@v1
         id: create_release
         env:
@@ -68,6 +72,7 @@ jobs:
           draft: true
           prerelease: true
       
+      # Upload assets
       - uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
