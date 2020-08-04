@@ -29,3 +29,43 @@ jobs:
       - run: just install-deps
       - run: just build-prod
       - run: ls ./build
+      
+  tauri:
+    needs: build
+    
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: [macos-latest, ubuntu-latest, windows-latest]
+        
+    runs-on: ${{ matrix.platform }}
+    
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 14
+      
+      # Dependencies
+      - run: cargo install tauri-bundler --force
+      - name: install webkit2gtk (ubuntu only)
+        if: matrix.platform == 'ubuntu-latest'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y webkit2gtk-4.0
+      - run: yarn
+          
+      # Tasks
+      - uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          distPath: ./build
+          iconPath: ./src/Static/Images/icon.png
+          prerelease: true
+          releaseDraft: true
+        
+    
