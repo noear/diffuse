@@ -1,2 +1,5 @@
 resolver: lts-14.27
 recommend-stack-upgrade: false
+
+nix:
+  enable: true
