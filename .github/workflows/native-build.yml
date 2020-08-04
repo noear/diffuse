@@ -23,9 +23,28 @@ jobs:
       # Tasks
       - run: nix-shell --run "just install-deps"
       - run: nix-shell --run "just build-prod"
-      - run: mv build diffuse
+          
+      # Upload artifacts
+      - uses: actions/upload-artifact@v2
+        with:
+          name: build
+          path: build/
+      
+      
+  create-release:
+    needs: build
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v2
       - run: mkdir compressed
       
+      # Download artifacts
+      - uses: actions/download-artifact@v2
+        with:
+          name: build
+          path: build/
+          
       # Create zip
       - uses: montudor/action-zip@v0.1.0
         with:
@@ -38,24 +57,6 @@ jobs:
           cwd: .
           files: ./diffuse
           outPath: compressed/diffuse-web.tar.gz
-          
-      # Upload artifacts
-      - uses: actions/upload-artifact@v2
-        with:
-          name: diffuse-web
-          path: compressed/
-      
-      
-  create-release:
-    needs: build
-    runs-on: ubuntu-latest
-    
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions/download-artifact@v2
-        with:
-          name: diffuse-web
-          path: compressed/
       
       # Get Diffuse's version number  
       - run: echo ::set-env name=PACKAGE_VERSION::$(node -p "require('./package.json').version")
@@ -111,15 +112,11 @@ jobs:
         with:
           node-version: 14
           
-      # Download and uncompress artifacts
+      # Download artifacts
       - uses: actions/download-artifact@v2
         with:
-          name: diffuse-web
-          path: compressed/
-          
-      - uses: montudor/action-zip@v0.1.0
-        with:
-          args: unzip -qq ./compressed/diffuse-web.zip -d ./build
+          name: build
+          path: build/
       
       # Dependencies
       - run: cargo install tauri-bundler --force
