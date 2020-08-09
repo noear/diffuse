@@ -162,13 +162,10 @@ jobs:
           sudo apt-get install -y webkit2gtk-4.0
           
       # Tasks
-      - run: "echo \"releaseId: ${{ needs.create-release.outputs.RELEASE_UPLOAD_ID }}\""
-      
       - uses: tauri-apps/tauri-action@v0.0.7
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           distPath: ../build
-          # iconPath: ./src/Static/Images/icon.png
-          includeDebug: true
+          iconPath: ./src/Static/Images/icon.png
           releaseId: ${{ needs.create-release.outputs.RELEASE_UPLOAD_ID }}
