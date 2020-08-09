@@ -163,6 +163,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           distPath: ../build
-          iconPath: ./src/Static/Images/icon.png
+          # iconPath: ./src/Static/Images/icon.png
           includeDebug: true
           releaseId: ${{ needs.create-release.outputs.RELEASE_UPLOAD_ID }}
