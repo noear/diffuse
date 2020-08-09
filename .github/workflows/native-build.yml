@@ -100,7 +100,7 @@ jobs:
     needs: create-release
     
     strategy:
-      fail-fast: false
+      fail-fast: true
       matrix:
         platform: [macos-latest, ubuntu-latest, windows-latest]
         
@@ -136,4 +136,5 @@ jobs:
         with:
           distPath: ../build
           iconPath: ./src/Static/Images/icon.png
+          includeDebug: true
           releaseId: ${{ needs.create-release.outputs.RELEASE_UPLOAD_ID }}
