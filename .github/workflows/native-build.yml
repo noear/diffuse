@@ -23,6 +23,25 @@ jobs:
       # Tasks
       - run: nix-shell --run "just install-deps"
       - run: nix-shell --run "just build-prod"
+      
+      # Cache
+      - id: stack_cache_key
+        run: echo ::set-output name=key::$(md5sum stack.yaml.lock | awk '{print $1}')
+      
+      - uses: actions/cache@v2
+        with:
+          path: ~/.stack
+          key: ${{ matrix.os }}-${{ steps.stack_cache_key.outputs.key }}
+          
+      - id: cache_key
+        run: echo ::set-output name=key::$(git branch)
+        
+      - uses: actions/cache@v2
+        with:
+          path: |
+            ./.stack-work/dist
+            **/node_modules
+          key: ${{ matrix.os }}-${{ steps.cache_key.outputs.key }}
           
       # Upload artifacts
       - uses: actions/upload-artifact@v2
@@ -128,6 +147,15 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y webkit2gtk-4.0
+          
+      # Cache
+      - uses: actions/cache@v2
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
           
       # Tasks
       - uses: tauri-apps/tauri-action@v0
