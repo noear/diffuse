@@ -84,7 +84,7 @@ jobs:
       - run: echo ::set-env name=PACKAGE_VERSION::$(node -p "require('./package.json').version")
       
       # Create release
-      - uses: actions/create-release@v1
+      - uses: actions/create-release@v1.1.2
         id: create_release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -158,7 +158,7 @@ jobs:
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
           
       # Tasks
-      - uses: tauri-apps/tauri-action@v0
+      - uses: tauri-apps/tauri-action@v0.0.7
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
