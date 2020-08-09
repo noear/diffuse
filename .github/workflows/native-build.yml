@@ -158,7 +158,7 @@ jobs:
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
           
       # Tasks
-      - run: echo 'releaseId: ${{ needs.create-release.outputs.RELEASE_UPLOAD_ID }}'
+      - run: echo \"releaseId: ${{ needs.create-release.outputs.RELEASE_UPLOAD_ID }}\"
       
       - uses: tauri-apps/tauri-action@v0.0.7
         env:
