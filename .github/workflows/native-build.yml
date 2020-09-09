@@ -145,7 +145,7 @@ jobs:
           toolchain: stable
       - uses: actions/setup-node@v1
         with:
-          node-version: 14
+          node-version: 12
           
       # Download artifacts
       - uses: actions/download-artifact@v2
